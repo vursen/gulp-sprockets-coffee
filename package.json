@@ -1,11 +1,11 @@
 {
-  "name": "gulp-sprockets-coffee",
+  "name": "gulp-sprockets-js",
   "version": "2.0.3",
   "description": "",
-  "homepage": "http://github.com/vursen/gulp-sprockets-coffee",
+  "homepage": "http://github.com/vursen/gulp-sprockets-js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/vursen/gulp-sprockets-coffee.git"
+    "url": "git://github.com/vursen/gulp-sprockets-js.git"
   },
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "gulpplugin"
   ],
   "author": {
-    "name": "Hugo Wiledal"
+    "name": "Sergey Vinogradov"
   },
   "license": "MIT",
   "devDependencies": {
@@ -24,27 +24,10 @@
     "should": "~2.1.1"
   },
   "dependencies": {
+    "coffee-script": "^1.10.0",
     "event-stream": "~3.1.0",
     "glob": "^5.0.12",
     "glob-all": "^3.0.1",
     "gulp-util": "~2.2.10"
-  },
-  "gitHead": "471c5ac3d4c0adba4aa5c9d65021f0f9420445cf",
-  "bugs": {
-    "url": "https://github.com/vursen/gulp-sprockets-coffee/issues"
-  },
-  "_id": "gulp-sprockets-coffee@1.0.0",
-  "_from": "gulp-sprockets-coffee@*",
-  "_npmVersion": "2.7.4",
-  "_nodeVersion": "0.12.2",
-  "_npmUser": {
-    "name": "Sergey Vinogradov",
-    "email": "mr.vursen@gmail.com"
-  },
-  "maintainers": [
-    {
-      "name": "Sergey Vinogradov",
-      "email": "mr.vursen@gmail.com"
-    }
-  ]
+  }
 }

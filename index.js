@@ -5,7 +5,7 @@ var fs           = require('fs'),
     glob         = require('glob-all'),
     CoffeeScript = require('coffee-script')
 
-var extensions    = [],
+var extensions    = ['js', 'js.coffee', 'coffee'],
     includePaths  = [],
     includedFiles = [];
 
@@ -29,7 +29,7 @@ module.exports = function (params) {
       }
 
       if (file.isStream()) {
-        throw new gutil.PluginError('gulp-sprockets', 'stream not supported');
+        throw new gutil.PluginError('gulp-sprockets-js', 'stream not supported');
       }
 
       if (file.isBuffer()) {
@@ -90,19 +90,4 @@ function processInclude(content, filePath) {
   }
 
   return content;
-}
-
-function addLeadingWhitespace(whitespace, string) {
-  return string.split("\n").map(function(line) {
-    return whitespace + line;
-  }).join("\n");
-}
-
-function inExtensions(filePath) {
-  if (!extensions) return true;
-  for (var i = 0; i < extensions.length; i++) {
-    var re = extensions[i] + "$";
-    if (filePath.match(re)) return true;
-  }
-  return false;
 }
