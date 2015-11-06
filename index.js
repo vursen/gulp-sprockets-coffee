@@ -13,7 +13,7 @@ module.exports = function (params) {
     var params    = params || {};
     includedFiles = [];
     includePaths  = [];
-    extensions    = [];
+    // extensions    = [];
 
     if (params.extensions) {
       extensions = typeof params.extensions === 'string' ? [params.extensions] : params.extensions;
@@ -69,7 +69,7 @@ function processInclude(content, filePath) {
 
     var globbedFilePath = fileMatches[0];
 
-    if (includedFiles.indexOf(globbedFilePath) > -1) {
+    if (includedFiles.indexOf(globbedFilePath) == -1) {
       includedFiles.push(globbedFilePath);
     } else {
       continue;
