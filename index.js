@@ -5,7 +5,7 @@ var fs           = require('fs'),
     glob         = require('glob-all'),
     CoffeeScript = require('coffee-script');
 
-var extensions    = ['js', 'js.coffee', 'coffee', 'eco'];
+var extensions    = ['js', 'js.coffee', 'coffee'];
 var includePaths  = [];
 
 module.exports = function (params) {
@@ -41,8 +41,7 @@ module.exports = function (params) {
 function sprocketsJS(file) {
   var includedFiles = [];
   var content       = String(file.contents);
-
-  console.log('------------------------------------------')
+  file.path         = gutil.replaceExtension(file.path, '.js')
 
   var compile = function(content, filePath) {
     var matches;
@@ -59,9 +58,6 @@ function sprocketsJS(file) {
         .replace(/['"]/g, "")
         .trim()
         .split(' ')[1];
-
-
-      // requirePath = requirePath;
 
       if (/\*$/.test(requirePath)) {
         fileMatches = glob.sync(path.normalize(path.join(path.dirname(filePath), requirePath)));
@@ -81,8 +77,6 @@ function sprocketsJS(file) {
 
       for (var j = 0; j < fileMatches.length; j++) {
         var globbedFilePath = fileMatches[j];
-
-        console.log(globbedFilePath);
 
         if (includedFiles.indexOf(globbedFilePath) == -1) {
           includedFiles.push(globbedFilePath);
