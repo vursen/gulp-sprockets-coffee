@@ -25,9 +25,11 @@
   },
   "dependencies": {
     "coffee-script": "^1.10.0",
+    "eco": "^1.0.3",
     "event-stream": "~3.1.0",
     "glob": "^5.0.12",
     "glob-all": "^3.0.1",
+    "gulp-eco": "0.0.2",
     "gulp-util": "~2.2.10"
   }
 }

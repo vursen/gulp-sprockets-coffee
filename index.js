@@ -3,9 +3,9 @@ var fs           = require('fs'),
     es           = require('event-stream'),
     gutil        = require('gulp-util'),
     glob         = require('glob-all'),
-    CoffeeScript = require('coffee-script')
+    CoffeeScript = require('coffee-script');
 
-var extensions    = ['js', 'js.coffee', 'coffee'];
+var extensions    = ['js', 'js.coffee', 'coffee', 'eco'];
 var includePaths  = [];
 
 module.exports = function (params) {
@@ -42,13 +42,16 @@ function sprocketsJS(file) {
   var includedFiles = [];
   var content       = String(file.contents);
 
-  var process = function(content) {
+  console.log('------------------------------------------')
+
+  var compile = function(content, filePath) {
     var matches;
 
     if (!(matches = content.match(/^(\s+)?(\/\/|\/\*|\#)(\s+)?=(\s+)?(include|require)(.+$)/mg)))
       return content;
 
     for (var i = 0; i < matches.length; i++) {
+      var fileMatches, compiledResultContent = '';
       var requirePath = matches[i]
         .replace(/(\s+)/gi, " ")
         .replace(/(\/\/|\/\*|\#)(\s+)?=(\s+)?/g, "")
@@ -57,39 +60,53 @@ function sprocketsJS(file) {
         .trim()
         .split(' ')[1];
 
-      var fileMatches = glob.sync(includePaths.map(function(path) {
-        return path + '/' + requirePath + '.+(' + extensions.join('|') + ')';
-      }));
+
+      // requirePath = requirePath;
+
+      if (/\*$/.test(requirePath)) {
+        fileMatches = glob.sync(path.normalize(path.join(path.dirname(filePath), requirePath)));
+      } else {
+        fileMatches = glob.sync(includePaths.map(function(path) {
+          return [path, requirePath + '.+(' + extensions.join('|') + ')'].join('/');
+        }));
+
+        if (fileMatches) {
+          fileMatches = fileMatches.slice(0, 1);
+        }
+      }
 
       if (!fileMatches) {
-        content = content.replace(matches[i], '');
-        continue;
+        content = content.replace(matches[i], ''); continue;
       }
 
-      var globbedFilePath = fileMatches[0];
+      for (var j = 0; j < fileMatches.length; j++) {
+        var globbedFilePath = fileMatches[j];
 
-      if (includedFiles.indexOf(globbedFilePath) == -1) {
-        includedFiles.push(globbedFilePath);
-      } else {
-        continue;
+        console.log(globbedFilePath);
+
+        if (includedFiles.indexOf(globbedFilePath) == -1) {
+          includedFiles.push(globbedFilePath);
+        } else { continue }
+
+        var fileContents = fs.readFileSync(globbedFilePath).toString();
+
+        if (path.extname(globbedFilePath) == '.coffee') {
+          var directives      = fileContents.match(/#=(.+)/g);
+          var compiledContent = directives && directives.join("\n") || '';
+          compiledContent    += "\n" + CoffeeScript.compile(fileContents) + ";\n";
+          compiledContent     = compile(compiledContent, globbedFilePath);
+        } else {
+          compiledContent     = compile(fileContents, globbedFilePath) + ";\n";
+        }
+
+        compiledResultContent += compiledContent;
       }
 
-      var fileContents = fs.readFileSync(globbedFilePath).toString();
-
-      if (path.extname(globbedFilePath) == '.coffee') {
-        var directives      = fileContents.match(/#=(.+)/g);
-        var compiledContent = directives && directives.join("\n") || '';
-        compiledContent    += "\n" + CoffeeScript.compile(fileContents) + ";\n";
-        compiledContent     = process(compiledContent);
-      } else {
-        compiledContent = process(fileContents) + ";\n";
-      }
-
-      content = content.replace(matches[i], function() { return compiledContent });
+      content = content.replace(matches[i], function() { return compiledResultContent });
     }
 
     return content;
   }
 
-  return process(content);
+  return compile(content, file.path);
 }
