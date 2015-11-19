@@ -60,7 +60,9 @@ function sprocketsJS(file) {
         .split(' ')[1];
 
       if (/\*$/.test(requirePath)) {
-        fileMatches = glob.sync(path.normalize(path.join(path.dirname(filePath), requirePath)));
+        fileMatches = glob.sync(path.normalize(path.join(path.dirname(filePath), requirePath)), {
+          nodir: true
+        });
       } else {
         fileMatches = glob.sync(includePaths.map(function(path) {
           return [path, requirePath + '.+(' + extensions.join('|') + ')'].join('/');
