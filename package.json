@@ -19,15 +19,11 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "gulp": "~3.3.4",
-    "mocha": "~1.17.0",
-    "should": "~2.1.1"
+    "gulp": "~3.3.4"
   },
   "dependencies": {
     "coffee-script": "^1.10.0",
-    "eco": "^1.0.3",
     "event-stream": "~3.1.0",
-    "glob": "^5.0.12",
     "glob-all": "^3.0.1",
     "gulp-util": "~2.2.10"
   }
