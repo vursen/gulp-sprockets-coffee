@@ -7,6 +7,7 @@ var fs           = require('fs'),
 
 var extensions    = ['js', 'js.coffee', 'coffee'];
 var includePaths  = [];
+var cache         = {};
 
 module.exports = function (params) {
     var params    = params || {};
@@ -86,13 +87,25 @@ function sprocketsJS(file) {
 
         var fileContents = fs.readFileSync(globbedFilePath).toString();
 
+        if ([]) {
+
+        }
+
         if (path.extname(globbedFilePath) == '.coffee') {
-          var directives      = fileContents.match(/#=(.+)/g);
-          var compiledContent = directives && directives.join("\n") || '';
-          compiledContent    += "\n" + CoffeeScript.compile(fileContents) + ";\n";
-          compiledContent     = compile(compiledContent, globbedFilePath);
+
+          console.time('coffee')
+          if (!(compiledContent = cache[globbedFilePath])) {
+            var directives      = fileContents.match(/#=(.+)/g);
+            var compiledContent = directives && directives.join("\n") || '';
+            compiledContent    += "\n" + CoffeeScript.compile(fileContents) + ";\n";
+            compiledContent     = compile(compiledContent, globbedFilePath);
+
+            cache[globbedFilePath] = compiledContent;
+          }
+          console.timeEnd('coffee');
+
         } else {
-          compiledContent     = compile(fileContents, globbedFilePath) + ";\n";
+          compiledContent = compile(fileContents, globbedFilePath) + ";\n";
         }
 
         compiledResultContent += compiledContent;
