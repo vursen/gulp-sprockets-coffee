@@ -93,7 +93,6 @@ function sprocketsJS(file) {
 
         if (path.extname(globbedFilePath) == '.coffee') {
 
-          console.time('coffee')
           if (!(compiledContent = cache[globbedFilePath])) {
             var directives      = fileContents.match(/#=(.+)/g);
             var compiledContent = directives && directives.join("\n") || '';
@@ -102,7 +101,6 @@ function sprocketsJS(file) {
 
             cache[globbedFilePath] = compiledContent;
           }
-          console.timeEnd('coffee');
 
         } else {
           compiledContent = compile(fileContents, globbedFilePath) + ";\n";
