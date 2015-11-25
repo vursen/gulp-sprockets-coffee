@@ -85,21 +85,23 @@ function sprocketsJS(file) {
           includedFiles.push(globbedFilePath);
         } else { continue }
 
+        var fileStat     = fs.statSync(globbedFilePath);
         var fileContents = fs.readFileSync(globbedFilePath).toString();
-
-        if ([]) {
-
-        }
 
         if (path.extname(globbedFilePath) == '.coffee') {
 
-          if (!(compiledContent = cache[globbedFilePath])) {
-            var directives      = fileContents.match(/#=(.+)/g);
-            var compiledContent = directives && directives.join("\n") || '';
-            compiledContent    += "\n" + CoffeeScript.compile(fileContents) + ";\n";
-            compiledContent     = compile(compiledContent, globbedFilePath);
+          if (!cache[globbedFilePath] || cache[globbedFilePath].mtime.getTime() !== fileStat.mtime.getTime()) {
+            var directives         = fileContents.match(/#=(.+)/g);
+            var compiledContent    = directives && directives.join("\n") || '';
+            compiledContent       += "\n" + CoffeeScript.compile(fileContents) + ";\n";
+            compiledContent        = compile(compiledContent, globbedFilePath);
 
-            cache[globbedFilePath] = compiledContent;
+            cache[globbedFilePath] = {
+              content: compiledContent,
+              mtime: fileStat.mtime
+            }
+          } else {
+            compiledContent = cache[globbedFilePath].content;
           }
 
         } else {
