@@ -10,7 +10,7 @@ var includePaths  = [];
 var cache         = {};
 
 module.exports = function (params) {
-    var params    = params || {};
+    var params = params || {};
 
     if (params.extensions) {
       extensions = typeof params.extensions === 'string' ? [params.extensions] : params.extensions;
@@ -42,9 +42,19 @@ module.exports = function (params) {
 function sprocketsJS(file) {
   var includedFiles = [];
   var content       = String(file.contents);
-  file.path         = gutil.replaceExtension(file.path, '.js')
 
-  var compile = function(content, filePath) {
+  if (path.extname(file.path) == '.coffee') {
+    content = coffeeCompile(content);
+  }
+
+  file.path = gutil.replaceExtension(file.path, '.js');
+
+  function coffeeCompile(fileContents) {
+    var directives = fileContents.match(/#=(.+)/g);
+    return (directives && directives.join("\n") || '') + "\n" + CoffeeScript.compile(fileContents);
+  }
+
+  function processFile(content, filePath) {
     var matches;
 
     if (!(matches = content.match(/^(\s+)?(\/\/|\/\*|\#)(\s+)?=(\s+)?(include|require)(.+$)/mg)))
@@ -89,12 +99,8 @@ function sprocketsJS(file) {
         var fileContents = fs.readFileSync(globbedFilePath).toString();
 
         if (path.extname(globbedFilePath) == '.coffee') {
-
           if (!cache[globbedFilePath] || cache[globbedFilePath].mtime.getTime() !== fileStat.mtime.getTime()) {
-            var directives         = fileContents.match(/#=(.+)/g);
-            var compiledContent    = directives && directives.join("\n") || '';
-            compiledContent       += "\n" + CoffeeScript.compile(fileContents) + ";\n";
-            compiledContent        = compile(compiledContent, globbedFilePath);
+            compiledContent = processFile(coffeeCompile(fileContents), globbedFilePath);
 
             cache[globbedFilePath] = {
               content: compiledContent,
@@ -103,9 +109,8 @@ function sprocketsJS(file) {
           } else {
             compiledContent = cache[globbedFilePath].content;
           }
-
         } else {
-          compiledContent = compile(fileContents, globbedFilePath) + ";\n";
+          compiledContent = processFile(fileContents, globbedFilePath) + ";\n";
         }
 
         compiledResultContent += compiledContent;
@@ -117,5 +122,5 @@ function sprocketsJS(file) {
     return content;
   }
 
-  return compile(content, file.path);
+  return processFile(content, file.path);
 }
