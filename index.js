@@ -90,30 +90,25 @@ function sprocketsJS(file) {
 
       for (var j = 0; j < fileMatches.length; j++) {
         var globbedFilePath = fileMatches[j];
+        var fileStat        = fs.statSync(globbedFilePath);
+        var fileContents;
 
-        if (includedFiles.indexOf(globbedFilePath) == -1) {
-          includedFiles.push(globbedFilePath);
-        } else { continue }
+        if (!cache[globbedFilePath] || cache[globbedFilePath].mtime.getTime() !== fileStat.mtime.getTime()) {
+          fileContents = fs.readFileSync(globbedFilePath).toString();
 
-        var fileStat     = fs.statSync(globbedFilePath);
-        var fileContents = fs.readFileSync(globbedFilePath).toString();
+          if (path.extname(globbedFilePath) == '.coffee') {
+            fileContents = coffeeCompile(fileContents);
+          }
 
-        if (path.extname(globbedFilePath) == '.coffee') {
-          if (!cache[globbedFilePath] || cache[globbedFilePath].mtime.getTime() !== fileStat.mtime.getTime()) {
-            compiledContent = processFile(coffeeCompile(fileContents), globbedFilePath);
-
-            cache[globbedFilePath] = {
-              content: compiledContent,
-              mtime: fileStat.mtime
-            }
-          } else {
-            compiledContent = cache[globbedFilePath].content;
+          cache[globbedFilePath] = {
+            content: fileContents,
+            mtime: fileStat.mtime
           }
         } else {
-          compiledContent = processFile(fileContents, globbedFilePath) + ";\n";
+          fileContents = cache[globbedFilePath].content;
         }
 
-        compiledResultContent += compiledContent;
+        compiledResultContent += processFile(fileContents, globbedFilePath) + ";\n";
       }
 
       content = content.replace(matches[i], function() { return compiledResultContent });
