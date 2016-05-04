@@ -1,9 +1,9 @@
-var fs           = require('fs'),
-    path         = require('path'),
-    es           = require('event-stream'),
-    gutil        = require('gulp-util'),
-    glob         = require('glob-all'),
-    CoffeeScript = require('coffee-script');
+const fs           = require('fs');
+const path         = require('path');
+const es           = require('event-stream');
+const gutil        = require('gulp-util');
+const glob         = require('glob-all');
+const CoffeeScript = require('coffee-script');
 
 var extensions    = ['js', 'js.coffee', 'coffee'];
 var includePaths  = [];
@@ -75,22 +75,19 @@ function sprocketsJS(file) {
           nodir: true
         });
       } else {
-        fileMatches = glob.sync(includePaths.map(function(path) {
-          return [path, requirePath + '.+(' + extensions.join('|') + ')'].join('/');
+        fileMatches = glob.sync(includePaths.map((path) => {
+          return `${ path }/${ requirePath }.+(${ extensions.join('|') })`;
         }));
 
-        if (fileMatches) {
-          fileMatches = fileMatches.slice(0, 1);
-        }
+        if (fileMatches) { fileMatches = fileMatches.slice(0, 1) }
       }
 
       if (!fileMatches) {
-        content = content.replace(matches[i], ''); continue;
+        throw new gutil.PluginError('gulp-sprockets-js', `${ requirePath } not found.`)
       }
 
-      for (var j = 0; j < fileMatches.length; j++) {
-        var globbedFilePath = fileMatches[j];
-        var fileStat        = fs.statSync(globbedFilePath);
+      fileMatches.forEach((globbedFilePath) => {
+        var fileStat = fs.statSync(globbedFilePath);
         var fileContents;
 
         if (!cache[globbedFilePath] || cache[globbedFilePath].mtime.getTime() !== fileStat.mtime.getTime()) {
@@ -109,9 +106,9 @@ function sprocketsJS(file) {
         }
 
         compiledResultContent += processFile(fileContents, globbedFilePath) + ";\n";
-      }
+      });
 
-      content = content.replace(matches[i], function() { return compiledResultContent });
+      content = content.replace(matches[i], () => compiledResultContent);
     }
 
     return content;
