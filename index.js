@@ -82,7 +82,7 @@ function sprocketsJS(file) {
         if (fileMatches) { fileMatches = fileMatches.slice(0, 1) }
       }
 
-      if (!fileMatches) {
+      if (!fileMatches.length) {
         throw new gutil.PluginError('gulp-sprockets-js', `${ requirePath } not found.`)
       }
 
