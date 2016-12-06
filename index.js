@@ -4,39 +4,45 @@ const es           = require('event-stream');
 const gutil        = require('gulp-util');
 const glob         = require('glob-all');
 const CoffeeScript = require('coffee-script');
+const babel        = require('babel-core');
 
-var extensions    = ['js', 'js.coffee', 'coffee'];
+var extensions    = ['js', 'js.coffee', 'coffee', 'es6.js'];
 var includePaths  = [];
 var cache         = {};
+var babelOptions  = {};
 
 module.exports = function (params) {
-    var params = params || {};
+  var params = params || {};
 
-    if (params.extensions) {
-      extensions = typeof params.extensions === 'string' ? [params.extensions] : params.extensions;
+  if (params.extensions) {
+    extensions = typeof params.extensions === 'string' ? [params.extensions] : params.extensions;
+  }
+
+  if (params.includePaths) {
+    includePaths = params.includePaths;
+  }
+
+  if (params.babelOptions) {
+    babelOptions = params.babelOptions;
+  }
+
+  function include(file, callback) {
+    if (file.isNull()) {
+      return callback(null, file);
     }
 
-    if (params.includePaths) {
-      includePaths = params.includePaths;
+    if (file.isStream()) {
+      throw new gutil.PluginError('gulp-sprockets-js', 'stream not supported');
     }
 
-    function include(file, callback) {
-      if (file.isNull()) {
-        return callback(null, file);
-      }
-
-      if (file.isStream()) {
-        throw new gutil.PluginError('gulp-sprockets-js', 'stream not supported');
-      }
-
-      if (file.isBuffer()) {
-        file.contents = new Buffer(sprocketsJS(file));
-      }
-
-      callback(null, file);
+    if (file.isBuffer()) {
+      file.contents = new Buffer(sprocketsJS(file));
     }
 
-    return es.map(include)
+    callback(null, file);
+  }
+
+  return es.map(include)
 };
 
 function sprocketsJS(file) {
@@ -93,8 +99,16 @@ function sprocketsJS(file) {
         if (!cache[globbedFilePath] || cache[globbedFilePath].mtime.getTime() !== fileStat.mtime.getTime()) {
           fileContents = fs.readFileSync(globbedFilePath).toString();
 
-          if (path.extname(globbedFilePath) == '.coffee') {
+          if (/\.coffee$/.test(globbedFilePath)) {
             fileContents = coffeeCompile(fileContents);
+          }
+
+          if (/\.es6.js$/.test(globbedFilePath)) {
+      			let code = babel.transform(fileContents, Object.assign({
+              filename: globbedFilePath
+            }, babelOptions)).code;
+
+            fileContents = `(function() { ${code} })();`;
           }
 
           cache[globbedFilePath] = {
