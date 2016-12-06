@@ -104,7 +104,7 @@ function sprocketsJS(file) {
           }
 
           if (/\.es6.js$/.test(globbedFilePath)) {
-      			let code = babel.transform(fileContents, Object.assign({
+      			var code = babel.transform(fileContents, Object.assign({
               filename: globbedFilePath
             }, babelOptions)).code;
 
